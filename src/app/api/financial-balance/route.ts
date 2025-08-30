@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const SHEET_ID = '1WhSc3ogSSTlSfvp7HlJLPZ4fiKFEyhUDSRhAwz8Cm8w';
-const SHEET_NAME = 'MONTHLY COLLECTION AVM';
+// Google Sheets configuration (currently using static data)
+// const SHEET_ID = '1WhSc3ogSSTlSfvp7HlJLPZ4fiKFEyhUDSRhAwz8Cm8w';
+// const SHEET_NAME = 'MONTHLY COLLECTION AVM';
 
 interface FinancialBalanceData {
   existingBalance2024: number;
