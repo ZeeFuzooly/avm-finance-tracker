@@ -49,15 +49,12 @@ import {
   EyeOutlined,
   CheckOutlined,
   HeartOutlined,
-  SafetyOutlined,
-  ClusterOutlined,
-  AppstoreOutlined,
-  AppstoreAddOutlined
+  SafetyOutlined
 } from '@ant-design/icons';
 import Link from 'next/link';
 
 const { Content } = Layout;
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 export function DashboardContent() {
@@ -75,7 +72,6 @@ export function DashboardContent() {
   // Use Ant Design's responsive breakpoints
   const screens = useBreakpoint();
   const isMobile = !screens.md;
-  const isTablet = screens.md && !screens.lg;
   const isDesktop = screens.lg;
 
   const fetchData = async () => {
