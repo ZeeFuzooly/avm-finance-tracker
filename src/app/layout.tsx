@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://avm-financial-tracker.vercel.app'),
+  metadataBase: new URL(process.env['NEXT_PUBLIC_BASE_URL'] || 'https://avm-financial-tracker.vercel.app'),
   alternates: {
     canonical: '/',
   },
@@ -97,9 +97,9 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: process.env.GOOGLE_VERIFICATION,
-    yandex: process.env.YANDEX_VERIFICATION,
-    yahoo: process.env.YAHOO_VERIFICATION,
+    google: process.env['GOOGLE_VERIFICATION'] || null,
+    yandex: process.env['YANDEX_VERIFICATION'] || null,
+    yahoo: process.env['YAHOO_VERIFICATION'] || null,
   },
   category: 'finance',
   classification: 'business',

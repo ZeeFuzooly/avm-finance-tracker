@@ -11,10 +11,7 @@ import {
   Button, 
   Statistic, 
   Card,
-  Spin,
-  Alert,
   Empty,
-  Breadcrumb,
   Row,
   Col
 } from 'antd';
@@ -22,7 +19,6 @@ import {
   ReloadOutlined, 
   TableOutlined, 
   ArrowLeftOutlined,
-  HomeOutlined,
   BarChartOutlined,
   DollarOutlined,
   UserOutlined,
@@ -57,24 +53,7 @@ export default function TablePage() {
     fetchData();
   }, []);
 
-  const breadcrumbItems = [
-    {
-      title: (
-        <Link href="/" style={{ color: '#666', textDecoration: 'none' }}>
-          <HomeOutlined />
-          <span style={{ marginLeft: '8px' }}>Dashboard</span>
-        </Link>
-      )
-    },
-    {
-      title: (
-        <span style={{ color: '#1890ff', fontWeight: '500' }}>
-          <TableOutlined />
-          <span style={{ marginLeft: '8px' }}>Collection Table</span>
-        </span>
-      )
-    }
-  ];
+
 
   if (loading) {
     return (

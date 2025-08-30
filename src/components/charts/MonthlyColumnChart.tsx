@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MonthlyTotals } from '@/types/sheet';
-import { Card, Typography, Space, Tag, Tooltip } from 'antd';
-import { BarChartOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, Typography } from 'antd';
 
-const { Text, Title } = Typography;
+
+const { Text } = Typography;
 
 interface MonthlyColumnChartProps {
   data: MonthlyTotals;
@@ -89,7 +89,7 @@ export function MonthlyColumnChart({ data }: MonthlyColumnChartProps) {
     // Draw bars with enhanced styling
     months.forEach((month, index) => {
       const value = sanitizedValues[index];
-      const barHeight = Math.max(0, (value / maxValue) * chartHeight);
+      const barHeight = Math.max(0, ((value || 0) / maxValue) * chartHeight);
       const x = padding + index * (barWidth + barSpacing) + barSpacing / 2;
       const y = padding + chartHeight - barHeight;
 
@@ -136,7 +136,7 @@ export function MonthlyColumnChart({ data }: MonthlyColumnChartProps) {
         ctx.font = `bold ${valueFontSize} Inter, sans-serif`;
         ctx.textAlign = 'center';
         ctx.fillText(
-          `Rs. ${value.toLocaleString()}`,
+          `Rs. ${(value || 0).toLocaleString()}`,
           x + barWidth / 2,
           y - 10
         );

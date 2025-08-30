@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from 'react';
 import { StatusDistribution } from '@/types/sheet';
-import { Card, Typography, Progress, Tag, Tooltip, Space } from 'antd';
-import { PieChartOutlined, CheckCircleOutlined, ExclamationCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Card, Typography, Progress } from 'antd';
+import { CheckCircleOutlined, ExclamationCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface StatusDonutProps {
   data: StatusDistribution;
@@ -151,7 +151,7 @@ export function StatusDonut({ data }: StatusDonutProps) {
 
   const total = Object.values(data).reduce((sum, val) => sum + val, 0);
   const fullyPaidPercentage = total > 0 ? ((data['Fully Paid'] || 0) / total) * 100 : 0;
-  const pendingPercentage = total > 0 ? (((data['Partial'] || 0) + (data['Unpaid'] || 0)) / total) * 100 : 0;
+
 
   return (
     <div className="chart-container">
