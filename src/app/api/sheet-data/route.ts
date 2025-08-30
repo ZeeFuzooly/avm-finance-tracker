@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchSheetDataAlternative } from '@/lib/sheet/alternative-gviz';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const data = await fetchSheetDataAlternative();
     return NextResponse.json(data, {

@@ -35,7 +35,7 @@ const financialSummaryData = {
   }
 };
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     return NextResponse.json(financialSummaryData, {
       headers: {
