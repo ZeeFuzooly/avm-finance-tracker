@@ -1,28 +1,37 @@
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { Tag } from 'antd';
+import { CheckCircleOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 interface StatusBadgeProps {
-  status: 'Fully Paid' | 'Partial' | 'Unpaid';
+  status: string;
   className?: string;
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const getStatusConfig = (status: StatusBadgeProps['status']) => {
+  const getStatusConfig = (status: string) => {
     switch (status) {
       case 'Fully Paid':
         return {
-          className: 'bg-green-100 text-green-800 border-green-200',
+          color: 'success',
+          icon: <CheckCircleOutlined />,
           text: 'Fully Paid'
         };
       case 'Partial':
         return {
-          className: 'bg-amber-100 text-amber-800 border-amber-200',
+          color: 'warning',
+          icon: <ExclamationCircleOutlined />,
           text: 'Partial'
         };
       case 'Unpaid':
         return {
-          className: 'bg-red-100 text-red-800 border-red-200',
+          color: 'error',
+          icon: <CloseCircleOutlined />,
           text: 'Unpaid'
+        };
+      default:
+        return {
+          color: 'default',
+          icon: null,
+          text: status
         };
     }
   };
@@ -30,14 +39,12 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = getStatusConfig(status);
 
   return (
-    <Badge 
-      className={cn(
-        'border font-medium',
-        config.className,
-        className
-      )}
+    <Tag 
+      color={config.color} 
+      icon={config.icon}
+      className={className || ''}
     >
       {config.text}
-    </Badge>
+    </Tag>
   );
 }

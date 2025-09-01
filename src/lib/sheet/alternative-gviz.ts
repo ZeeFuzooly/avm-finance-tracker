@@ -4,13 +4,7 @@ import { getMockSheetData } from './mock-data';
 const SHEET_ID = '1WhSc3ogSSTlSfvp7HlJLPZ4fiKFEyhUDSRhAwz8Cm8w';
 const SHEET_NAME = 'MONTHLY COLLECTION AVM';
 
-// Alternative URL formats to try
-const URL_FORMATS = [
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`,
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`,
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`,
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?output=csv`
-];
+
 
 interface GvizResponse {
   table: {
@@ -22,8 +16,6 @@ interface GvizResponse {
 }
 
 export async function fetchSheetDataAlternative(): Promise<RawRow[]> {
-  const SHEET_ID = '1WhSc3ogSSTlSfvp7HlJLPZ4fiKFEyhUDSRhAwz8Cm8w';
-  const SHEET_NAME = 'MONTHLY COLLECTION AVM';
   
   // URL formats to try - prioritize CSV since it's working
   const urlFormats = [
@@ -59,7 +51,7 @@ export async function fetchSheetDataAlternative(): Promise<RawRow[]> {
         // Try JSON parsing
         console.log('Attempting JSON parsing');
         const jsonMatch = responseText.match(/google\.visualization\.Query\.setResponse\((.*)\)/);
-        if (jsonMatch) {
+        if (jsonMatch && jsonMatch[1]) {
           const jsonData = JSON.parse(jsonMatch[1]);
           const tableData = parseTableData(jsonData.table);
           if (tableData.length > 0) {
@@ -89,7 +81,7 @@ function parseTableData(table: GvizResponse['table']): RawRow[] {
   });
   
   // Find header row by looking for "Family Members" and "Jan"
-  const headerRowIndex = findHeaderRow(rows, cols);
+  const headerRowIndex = findHeaderRow(rows);
   if (headerRowIndex === -1) {
     console.error('Could not find header row. Available rows:', rows.slice(0, 5).map((row, i) => ({
       index: i,
@@ -99,7 +91,11 @@ function parseTableData(table: GvizResponse['table']): RawRow[] {
   }
 
   // Extract column indices
-  const columnIndices = extractColumnIndices(cols, rows[headerRowIndex]);
+  const headerRow = rows[headerRowIndex];
+  if (!headerRow) {
+    throw new Error('Header row not found');
+  }
+  const columnIndices = extractColumnIndices(headerRow);
   
   // Parse data rows (skip header row)
   const dataRows = rows.slice(headerRowIndex + 1);
@@ -115,10 +111,10 @@ function parseTableData(table: GvizResponse['table']): RawRow[] {
   return parsedRows;
 }
 
-function findHeaderRow(rows: GvizResponse['table']['rows'], cols: GvizResponse['table']['cols']): number {
+function findHeaderRow(rows: GvizResponse['table']['rows']): number {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!row.c || row.c.length === 0) continue;
+    if (!row || !row.c || row.c.length === 0) continue;
     
     // Get all cell values as strings
     const cellValues = row.c.map(cell => String(cell?.v || '').toLowerCase().trim());
@@ -149,7 +145,7 @@ function findHeaderRow(rows: GvizResponse['table']['rows'], cols: GvizResponse['
   // If not found, try a more aggressive search
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!row.c || row.c.length === 0) continue;
+    if (!row || !row.c || row.c.length === 0) continue;
     
     const cellValues = row.c.map(cell => String(cell?.v || '').toLowerCase().trim());
     
@@ -178,7 +174,7 @@ interface ColumnIndices {
   totalYear?: number;
 }
 
-function extractColumnIndices(cols: GvizResponse['table']['cols'], headerRow: GvizResponse['table']['rows'][0]): ColumnIndices {
+function extractColumnIndices(headerRow: GvizResponse['table']['rows'][0]): ColumnIndices {
   const indices: Partial<ColumnIndices> = {
     months: {} as Record<MonthKey, number>,
   };
@@ -249,7 +245,7 @@ function parseRow(row: GvizResponse['table']['rows'][0], indices: ColumnIndices,
     familyMembers: String(getCellValue(indices.familyMembers) ?? '').trim(),
     monthlyAmount: parseNumber(getCellValue(indices.monthlyAmount)),
     months,
-    totalYear: indices.totalYear !== undefined ? parseNumber(getCellValue(indices.totalYear)) : undefined,
+    totalYear: indices.totalYear !== undefined ? parseNumber(getCellValue(indices.totalYear)) : null,
   };
 }
 
@@ -260,11 +256,13 @@ function parseCSV(csvText: string): RawRow[] {
   // Find header row with more flexible matching
   let headerRowIndex = -1;
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].toLowerCase();
-    const hasFamily = line.includes('family members') || line.includes('family');
-    const hasJan = line.includes('jan');
-    const hasNo = line.includes('no') || line.includes('#');
-    const hasMonthlyAmount = line.includes('monthly amount') || line.includes('monthly');
+    const line = lines[i];
+    if (!line) continue;
+    const lineLower = line.toLowerCase();
+    const hasFamily = lineLower.includes('family members') || lineLower.includes('family');
+    const hasJan = lineLower.includes('jan');
+    const hasNo = lineLower.includes('no') || lineLower.includes('#');
+    const hasMonthlyAmount = lineLower.includes('monthly amount') || lineLower.includes('monthly');
     
     // Need at least 3 of the key headers
     const matches = [hasFamily, hasJan, hasNo, hasMonthlyAmount].filter(Boolean).length;
@@ -279,10 +277,12 @@ function parseCSV(csvText: string): RawRow[] {
   // Fallback: look for any row with both "family" and a month
   if (headerRowIndex === -1) {
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].toLowerCase();
-      const hasFamily = line.includes('family');
+      const line = lines[i];
+      if (!line) continue;
+      const lineLower = line.toLowerCase();
+      const hasFamily = lineLower.includes('family');
       const hasMonth = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].some(month => 
-        line.includes(month)
+        lineLower.includes(month)
       );
       
       if (hasFamily && hasMonth) {
@@ -298,7 +298,12 @@ function parseCSV(csvText: string): RawRow[] {
     return [];
   }
 
-  const headers = lines[headerRowIndex].split(',').map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+  const headerLine = lines[headerRowIndex];
+  if (!headerLine) {
+    console.error('Header line not found');
+    return [];
+  }
+  const headers = headerLine.split(',').map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
   
   const monthKeys: MonthKey[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   
@@ -358,7 +363,7 @@ function parseCSV(csvText: string): RawRow[] {
         familyMembers: (values[indices.familyMembers!] || '').replace(/^"|"$/g, '').trim(),
         monthlyAmount: parseNumber(values[indices.monthlyAmount!] || ''),
         months,
-        totalYear: indices.totalYear !== undefined ? parseNumber(values[indices.totalYear] || '') : undefined,
+        totalYear: indices.totalYear !== undefined ? parseNumber(values[indices.totalYear] || '') : null,
       };
 
       return row;

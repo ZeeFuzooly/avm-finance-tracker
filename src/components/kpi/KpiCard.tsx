@@ -1,10 +1,8 @@
 'use client';
 
-import { Card, Statistic, Typography, Badge, Progress, Tooltip, Space } from 'antd';
-import { 
-  UserOutlined, 
-  DollarOutlined, 
-  CheckCircleOutlined, 
+import { Card, Typography, Progress, Tooltip } from 'antd';
+import {
+  CheckCircleOutlined,
   ExclamationCircleOutlined,
   RiseOutlined,
   FallOutlined,
@@ -20,8 +18,8 @@ const { Text, Title } = Typography;
 interface KpiCardProps {
   title: string;
   value: string | number;
-  change?: number;
-  changeType?: 'increase' | 'decrease';
+  change?: number | undefined;
+  changeType?: 'increase' | 'decrease' | undefined;
   icon: React.ReactNode;
   color: 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'cyan';
   subtitle?: string;
@@ -38,16 +36,9 @@ const colorVariants = {
   cyan: { from: 'from-cyan-500', to: 'to-cyan-600', bg: 'bg-cyan-50', border: 'border-cyan-200' },
 };
 
-const iconColors = {
-  blue: 'text-blue-600',
-  green: 'text-green-600',
-  purple: 'text-purple-600',
-  orange: 'text-orange-600',
-  red: 'text-red-600',
-  cyan: 'text-cyan-600',
-};
 
-export function KpiCard({ title, value, change, changeType, icon, color, subtitle, trend, percentage }: KpiCardProps) {
+
+export function KpiCard({ title, value, change, changeType, icon, color, subtitle, percentage }: KpiCardProps) {
   const colors = colorVariants[color];
   
   return (
@@ -133,7 +124,7 @@ export function ContributorsCard({ count, trend = 'up' }: { count: number; trend
     <KpiCard
       title="Total Contributors"
       value={count.toLocaleString()}
-      change={trend === 'up' ? 12 : trend === 'down' ? -5 : 0}
+      change={trend === 'up' ? 12 : trend === 'down' ? -5 : undefined}
       changeType={trend === 'up' ? 'increase' : trend === 'down' ? 'decrease' : undefined}
       icon={<TeamOutlined />}
       color="blue"
@@ -162,7 +153,7 @@ export function ExpectedTotalCard({ amount, trend = 'stable' }: { amount: number
     <KpiCard
       title="Expected Total"
       value={`Rs. ${amount.toLocaleString()}`}
-      change={trend === 'up' ? 15 : trend === 'down' ? -8 : 0}
+      change={trend === 'up' ? 15 : trend === 'down' ? -8 : undefined}
       changeType={trend === 'up' ? 'increase' : trend === 'down' ? 'decrease' : undefined}
       icon={<TrophyOutlined />}
       color="purple"
@@ -192,7 +183,7 @@ export function OutstandingAmountCard({ amount, trend = 'down' }: { amount: numb
     <KpiCard
       title="Outstanding Amount"
       value={`Rs. ${amount.toLocaleString()}`}
-      change={trend === 'down' ? 8 : trend === 'up' ? -5 : 0}
+      change={trend === 'down' ? 8 : trend === 'up' ? -5 : undefined}
       changeType={trend === 'down' ? 'decrease' : trend === 'up' ? 'increase' : undefined}
       icon={<ExclamationCircleOutlined />}
       color="orange"
@@ -206,7 +197,7 @@ export function CollectionRateCard({ rate, trend = 'up' }: { rate: number; trend
     <KpiCard
       title="Collection Rate"
       value={`${rate.toFixed(1)}%`}
-      change={trend === 'up' ? 5 : trend === 'down' ? -2 : 0}
+      change={trend === 'up' ? 5 : trend === 'down' ? -2 : undefined}
       changeType={trend === 'up' ? 'increase' : trend === 'down' ? 'decrease' : undefined}
       icon={<RiseOutlined />}
       color="green"

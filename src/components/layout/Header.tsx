@@ -4,7 +4,6 @@ import { Layout, Typography, Space, Button, Menu, Dropdown, Avatar, Badge } from
 import { 
   HomeOutlined, 
   TableOutlined, 
-  BarChartOutlined,
   MenuOutlined,
   MobileOutlined,
   TabletOutlined,
@@ -205,8 +204,8 @@ export function Header() {
               </div>
             </Dropdown>
 
-            {/* Mobile Navigation */}
-            <div style={{ display: 'none', '@media (max-width: 768px)': { display: 'block' } }}>
+                         {/* Mobile Navigation */}
+             <div className="mobile-nav" style={{ display: 'none' }}>
               <Dropdown
                 menu={{ items: mobileMenu.props.items }}
                 trigger={['click']}

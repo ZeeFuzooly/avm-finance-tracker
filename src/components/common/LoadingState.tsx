@@ -1,5 +1,5 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Card, Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
 interface LoadingStateProps {
   message?: string;
@@ -11,11 +11,14 @@ export function LoadingState({
   className 
 }: LoadingStateProps) {
   return (
-    <Card className={className}>
-      <CardContent className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">{message}</p>
-      </CardContent>
+    <Card className={className || ''}>
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <Spin 
+          indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} 
+          size="large"
+        />
+        <p className="text-gray-600 mt-4">{message}</p>
+      </div>
     </Card>
   );
 }

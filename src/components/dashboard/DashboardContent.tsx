@@ -72,7 +72,6 @@ export function DashboardContent() {
   // Use Ant Design's responsive breakpoints
   const screens = useBreakpoint();
   const isMobile = !screens.md;
-  const isDesktop = screens.lg;
 
   const fetchData = async () => {
     try {
@@ -102,6 +101,7 @@ export function DashboardContent() {
         icon: <CheckOutlined style={{ color: '#52c41a' }} />,
       });
     } catch (err) {
+      console.error('Fetch data error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load data');
       
       // Show error notification
@@ -204,7 +204,7 @@ export function DashboardContent() {
     );
   }
 
-  const { rows, monthlyTotals, kpis, statusDistribution } = data;
+  const { monthlyTotals, kpis, statusDistribution } = data;
 
   return (
     <Content className="dashboard-content">
@@ -212,27 +212,10 @@ export function DashboardContent() {
         {/* Responsive Header */}
         <div className="dashboard-header">
           <Card className="header-card">
-            <Row gutter={[16, 16]} align="middle">
-              {/* Header Left - Brand */}
-              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+            <Row gutter={[16, 16]} align="middle" justify="space-between">
+              {/* Header Left - Last Updated */}
+              <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                 <div className="header-left">
-                  <div className="header-icon">
-                    <CrownOutlined />
-                  </div>
-                  <div className="header-text">
-                    <Title level={isMobile ? 3 : 1} className="header-title">
-                      AVM Financial Tracker
-                    </Title>
-                    <Text className="header-subtitle">
-                      Professional Collection Management System
-                    </Text>
-                  </div>
-                </div>
-              </Col>
-              
-              {/* Header Center - Last Updated */}
-              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-                <div className="header-center">
                   <div className="last-updated">
                     <CalendarOutlined />
                     <Text>
@@ -253,7 +236,7 @@ export function DashboardContent() {
               </Col>
               
               {/* Header Right - Actions */}
-              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+              <Col xs={24} sm={24} md={12} lg={12} xl={12}>
                 <div className="header-right">
                   <Space 
                     size={isMobile ? "small" : "middle"} 

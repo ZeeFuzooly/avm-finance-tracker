@@ -41,6 +41,9 @@ export async function fetchSheetDataServer(): Promise<RawRow[]> {
       throw new Error('Invalid gviz response format');
     }
 
+    if (!jsonMatch[1]) {
+      throw new Error('Invalid JSON response format');
+    }
     const data: GvizResponse = JSON.parse(jsonMatch[1]);
     
     if (!data.table || !data.table.cols || !data.table.rows) {
@@ -57,16 +60,20 @@ export async function fetchSheetDataServer(): Promise<RawRow[]> {
 }
 
 function parseTableData(table: GvizResponse['table']): RawRow[] {
-  const { cols, rows } = table;
+  const { rows } = table;
   
   // Find header row by looking for "Family Members" and "Jan"
-  const headerRowIndex = findHeaderRow(rows, cols);
+  const headerRowIndex = findHeaderRow(rows);
   if (headerRowIndex === -1) {
     throw new Error('Could not find header row containing "Family Members" and "Jan"');
   }
 
   // Extract column indices
-  const columnIndices = extractColumnIndices(cols, rows[headerRowIndex]);
+  const headerRow = rows[headerRowIndex];
+  if (!headerRow) {
+    throw new Error('Header row not found');
+  }
+  const columnIndices = extractColumnIndices(headerRow);
   
   // Parse data rows (skip header row)
   const dataRows = rows.slice(headerRowIndex + 1);
@@ -76,15 +83,16 @@ function parseTableData(table: GvizResponse['table']): RawRow[] {
     .filter((row): row is RawRow => row.familyMembers.trim() !== ''); // Filter out empty rows
 }
 
-function findHeaderRow(rows: GvizResponse['table']['rows'], cols: GvizResponse['table']['cols']): number {
+function findHeaderRow(rows: GvizResponse['table']['rows']): number {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const hasFamilyMembers = row.c.some((cell, index) => 
-      cell?.v && typeof cell.v === 'string' && 
+    if (!row || !row.c) continue;
+        const hasFamilyMembers = row.c.some((cell) =>
+      cell?.v && typeof cell.v === 'string' &&
       cell.v.toLowerCase().includes('family members')
     );
-    const hasJan = row.c.some((cell, index) => 
-      cell?.v && typeof cell.v === 'string' && 
+    const hasJan = row.c.some((cell) =>
+      cell?.v && typeof cell.v === 'string' &&
       cell.v.toLowerCase().includes('jan')
     );
     
@@ -103,7 +111,7 @@ interface ColumnIndices {
   totalYear?: number;
 }
 
-function extractColumnIndices(cols: GvizResponse['table']['cols'], headerRow: GvizResponse['table']['rows'][0]): ColumnIndices {
+function extractColumnIndices(headerRow: GvizResponse['table']['rows'][0]): ColumnIndices {
   const indices: Partial<ColumnIndices> = {
     months: {} as Record<MonthKey, number>,
   };
@@ -164,6 +172,6 @@ function parseRow(row: GvizResponse['table']['rows'][0], indices: ColumnIndices,
     familyMembers: String(getCellValue(indices.familyMembers) ?? '').trim(),
     monthlyAmount: parseNumber(getCellValue(indices.monthlyAmount)),
     months,
-    totalYear: indices.totalYear !== undefined ? parseNumber(getCellValue(indices.totalYear)) : undefined,
+    totalYear: indices.totalYear !== undefined ? parseNumber(getCellValue(indices.totalYear)) : null,
   };
 }

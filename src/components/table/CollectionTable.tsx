@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { EnrichedRow } from '@/types/sheet';
 import { 
   Table, 
   Button, 
   Drawer, 
   Typography, 
-  Space, 
   Tag, 
   Progress, 
   Avatar, 
@@ -17,7 +16,6 @@ import {
   Row,
   Col,
   Card,
-  List,
   Divider,
   Tooltip,
   Badge,
@@ -45,15 +43,24 @@ const { Search } = Input;
 interface CollectionTableProps {
   data: EnrichedRow[];
   loading: boolean;
-  onRefresh: () => Promise<void>;
 }
 
-export function CollectionTable({ data, loading, onRefresh }: CollectionTableProps) {
+export function CollectionTable({ data, loading }: CollectionTableProps) {
   const [selectedRow, setSelectedRow] = useState<EnrichedRow | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isMobile, setIsMobile] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('CollectionTable Debug:', {
+      dataLength: data?.length || 0,
+      searchText,
+      statusFilter,
+      sampleData: data?.[0]
+    });
+  }, [data, searchText, statusFilter]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -104,16 +111,34 @@ export function CollectionTable({ data, loading, onRefresh }: CollectionTablePro
     return { icon: <FireOutlined />, color: '#f5222d', text: 'Needs Attention' };
   };
 
-  const filteredData = data.filter(item => {
-    const matchesSearch = 
-      item.familyMembers?.toLowerCase().includes(searchText.toLowerCase()) ||
-      (item.no?.toString() || '').includes(searchText) ||
-      (item.monthlyAmount?.toString() || '').includes(searchText);
-    
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      // Search filter - search across multiple fields
+      const searchLower = searchText.toLowerCase().trim();
+      const matchesSearch = searchText === '' || 
+        (item.familyMembers && item.familyMembers.toLowerCase().includes(searchLower)) ||
+        (item.no && item.no.toString().toLowerCase().includes(searchLower)) ||
+        (item.monthlyAmount && item.monthlyAmount.toString().includes(searchLower)) ||
+        (item.collectedYear && item.collectedYear.toString().includes(searchLower)) ||
+        (item.expectedYear && item.expectedYear.toString().includes(searchLower));
+      
+      // Status filter
+      const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [data, searchText, statusFilter]);
+
+  // Debug filtered data
+  useEffect(() => {
+    console.log('Filtered Data Debug:', {
+      originalDataLength: data?.length || 0,
+      filteredDataLength: filteredData?.length || 0,
+      searchText,
+      statusFilter,
+      isFiltered: searchText || statusFilter !== 'all'
+    });
+  }, [data, filteredData, searchText, statusFilter]);
 
   const columns = [
     {
@@ -509,7 +534,7 @@ export function CollectionTable({ data, loading, onRefresh }: CollectionTablePro
     }
   ];
 
-  const mobileListItems = filteredData.map((item, index) => {
+  const mobileListItems = filteredData.map((item) => {
     const outstanding = item.expectedYear - item.collectedYear;
     const percentage = item.expectedYear > 0 ? (item.collectedYear / item.expectedYear) * 100 : 0;
     const performance = getPerformanceBadge(percentage);
@@ -670,6 +695,94 @@ export function CollectionTable({ data, loading, onRefresh }: CollectionTablePro
 
   return (
     <div>
+      {/* Debug Card - Remove after fixing */}
+      <Card 
+        style={{ 
+          marginBottom: '16px', 
+          background: '#f0f8ff', 
+          border: '1px solid #1890ff',
+          fontSize: '12px'
+        }}
+      >
+        <div style={{ color: '#666' }}>
+          <strong>Debug Info:</strong><br/>
+          Data Length: {data?.length || 0}<br/>
+          Filtered Length: {filteredData?.length || 0}<br/>
+          Search: "{searchText}"<br/>
+          Status Filter: "{statusFilter}"<br/>
+          {data && data.length > 0 && (
+            <>
+              Sample Item: {JSON.stringify({
+                no: data[0]?.no,
+                familyMembers: data[0]?.familyMembers?.substring(0, 20),
+                status: data[0]?.status,
+                monthlyAmount: data[0]?.monthlyAmount,
+                collectedYear: data[0]?.collectedYear,
+                expectedYear: data[0]?.expectedYear
+              })}
+            </>
+          )}
+          <br/><br/>
+          <strong>Test Buttons:</strong><br/>
+          <Button 
+            size="small" 
+            onClick={() => setSearchText('John')}
+            style={{ marginRight: '8px', marginBottom: '4px' }}
+          >
+            Search "John"
+          </Button>
+          <Button 
+            size="small" 
+            onClick={() => setStatusFilter('Fully Paid')}
+            style={{ marginRight: '8px', marginBottom: '4px' }}
+          >
+            Filter "Fully Paid"
+          </Button>
+          <Button 
+            size="small" 
+            onClick={() => {
+              setSearchText('');
+              setStatusFilter('all');
+            }}
+            style={{ marginRight: '8px', marginBottom: '4px' }}
+          >
+            Clear All
+          </Button>
+          <Button 
+            size="small" 
+            onClick={() => {
+              console.log('Current data:', data);
+              console.log('Current filtered data:', filteredData);
+              console.log('Current search text:', searchText);
+              console.log('Current status filter:', statusFilter);
+            }}
+            style={{ marginRight: '8px', marginBottom: '4px' }}
+          >
+            Log to Console
+          </Button>
+          <Button 
+            size="small" 
+            onClick={() => {
+              console.log('Testing search with "John"');
+              setSearchText('John');
+            }}
+            style={{ marginRight: '8px', marginBottom: '4px' }}
+          >
+            Test Search "John"
+          </Button>
+          <Button 
+            size="small" 
+            onClick={() => {
+              console.log('Testing filter with "Fully Paid"');
+              setStatusFilter('Fully Paid');
+            }}
+            style={{ marginRight: '8px', marginBottom: '4px' }}
+          >
+            Test Filter "Fully Paid"
+          </Button>
+        </div>
+      </Card>
+
       {/* Premium Summary Header */}
       <Card 
         className="premium-card"
@@ -704,6 +817,11 @@ export function CollectionTable({ data, loading, onRefresh }: CollectionTablePro
               </Text>
               <Text style={{ fontSize: '14px', color: '#666' }}>
                 {filteredData.length} families • {filteredData.filter(item => item.status === 'Fully Paid').length} fully paid
+                {(searchText || statusFilter !== 'all') && (
+                  <span style={{ color: '#667eea', fontWeight: '500' }}>
+                    {' '}• Filtered from {data.length} total
+                  </span>
+                )}
               </Text>
             </div>
           </div>
@@ -768,17 +886,28 @@ export function CollectionTable({ data, loading, onRefresh }: CollectionTablePro
             <Search
               placeholder="Search families, amounts, or numbers..."
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e) => {
+                console.log('Search onChange:', e.target.value);
+                setSearchText(e.target.value);
+              }}
+              onSearch={(value) => {
+                console.log('Search onSearch:', value);
+                setSearchText(value);
+              }}
               prefix={<SearchOutlined style={{ color: '#667eea' }} />}
               style={{
                 borderRadius: '8px',
                 border: '1px solid rgba(102, 126, 234, 0.2)'
               }}
+              allowClear
             />
           </div>
           <Select
             value={statusFilter}
-            onChange={setStatusFilter}
+            onChange={(value) => {
+              console.log('Status filter onChange:', value);
+              setStatusFilter(value);
+            }}
             placeholder="Filter by status"
             suffixIcon={<FilterOutlined style={{ color: '#667eea' }} />}
             options={[
@@ -792,7 +921,23 @@ export function CollectionTable({ data, loading, onRefresh }: CollectionTablePro
               borderRadius: '8px',
               border: '1px solid rgba(102, 126, 234, 0.2)'
             }}
+            allowClear
           />
+          {(searchText || statusFilter !== 'all') && (
+            <Button
+              onClick={() => {
+                setSearchText('');
+                setStatusFilter('all');
+              }}
+              style={{
+                borderRadius: '8px',
+                border: '1px solid rgba(102, 126, 234, 0.2)',
+                color: '#667eea'
+              }}
+            >
+              Clear Filters
+            </Button>
+          )}
         </div>
       </Card>
 
@@ -834,6 +979,7 @@ export function CollectionTable({ data, loading, onRefresh }: CollectionTablePro
           }}
         >
           <Table
+            key={`table-${searchText}-${statusFilter}-${filteredData.length}`}
             columns={columns}
             dataSource={filteredData}
             rowKey="no"
@@ -1042,7 +1188,7 @@ export function CollectionTable({ data, loading, onRefresh }: CollectionTablePro
               }
             >
               <Row gutter={[8, 8]}>
-                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, index) => {
+                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month) => {
                   const monthKey = month.toLowerCase() as keyof EnrichedRow;
                   const amount = selectedRow[monthKey] as number;
                   const hasPayment = amount && amount > 0;

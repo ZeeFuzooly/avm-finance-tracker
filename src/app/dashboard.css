@@ -226,6 +226,7 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .header-icon {
@@ -271,15 +272,44 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #6b7280;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
   font-size: 14px;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
+}
+
+.last-updated .anticon {
+  font-size: 16px;
 }
 
 .header-right {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+}
+
+/* Responsive adjustments for header */
+@media (max-width: 768px) {
+  .header-left,
+  .header-right {
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  
+  .last-updated {
+    justify-content: center;
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  
+  .header-right .ant-space {
+    width: 100%;
+    justify-content: center !important;
+  }
 }
 
 /* KPI Section */

@@ -41,8 +41,14 @@ export default function TablePage() {
       setLoading(true);
       setError(null);
       const dashboardData = await getDashboardData();
+      console.log('TablePage - Dashboard data:', dashboardData);
+      console.log('TablePage - Rows count:', dashboardData.rows?.length || 0);
+      if (dashboardData.rows && dashboardData.rows.length > 0) {
+        console.log('TablePage - Sample row:', dashboardData.rows[0]);
+      }
       setData(dashboardData.rows);
     } catch (err) {
+      console.error('TablePage - Error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
       setLoading(false);
@@ -53,6 +59,14 @@ export default function TablePage() {
     fetchData();
   }, []);
 
+  // Debug data changes
+  useEffect(() => {
+    console.log('TablePage - Data state changed:', {
+      dataLength: data?.length || 0,
+      loading,
+      error
+    });
+  }, [data, loading, error]);
 
 
   if (loading) {
@@ -349,10 +363,9 @@ export default function TablePage() {
             </div>
           }
         >
-          <CollectionTable 
-            data={data} 
-            loading={loading} 
-            onRefresh={fetchData}
+                    <CollectionTable
+            data={data}
+            loading={loading}
           />
         </Card>
 
